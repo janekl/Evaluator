@@ -21,7 +21,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 try:
     import mlflow
@@ -56,6 +56,13 @@ class MLflowExporterConfig(ExportConfig):
     description: Optional[str] = Field(default=None)
     tags: Optional[Dict[str, str]] = Field(default=None)
     extra_metadata: Optional[Dict[str, Any]] = Field(default=None)
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def _coerce_tag_values_to_str(cls, v: Any) -> Any:
+        if v is None:
+            return v
+        return {str(k): str(val) for k, val in v.items()}
 
     @model_validator(mode="before")
     @classmethod
